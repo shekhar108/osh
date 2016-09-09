@@ -23,7 +23,7 @@ int main(void)
 		fflush(stdout);
 
 		argc = 0;
-		WSIG = 0;
+		WSIG = 1;
 		fgets(cmd,MAX_LINE,stdin);	/* read cmd */
 		if(strcmp(cmd,"exit\n") == 0) {
 			should_run = 0;
@@ -41,7 +41,7 @@ int main(void)
 		}
 
 		if(strcmp(args[argc-1],"&") == 0) {
-			WSIG = 1;
+			WSIG = 0;
 			args[argc-1] = NULL;
 		}
 		else {
@@ -65,7 +65,6 @@ int main(void)
 			if(WSIG) {
 				wait(NULL);
 			}
-			wait(NULL);
 		}
 	}
 
