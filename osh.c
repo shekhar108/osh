@@ -4,69 +4,123 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#define MAX_LINE 80	/* The maximum length of cmd */
+#define MAX_LINE 1024	/* The maximum length of cmd */
+#define MAX_ARGS 80		/* length of each argument */
 #define ws " \t\n\v"
 
-int main(void)
+/* Built-in function declarations for shell commands */
+int osh_exit(char **args);
+
+/* List of built-in commands */
+char *builtin_cmd[] = {
+	"exit"
+};
+
+/* List of built-in functions */
+int (*builtin_func[]) (char **) = {
+	&osh_exit
+};
+
+/*  Number of built-in commands */
+int builtin_num = sizeof(builtin_cmd)/sizeof(char*);
+
+/* Implementing built-in functions */
+int osh_exit(char **args)
 {
-	int should_run = 1;	/* flag to determine when to exit program */
-	char cmd[MAX_LINE];	/* command read */
-	char *args[MAX_LINE/2 + 1];	/* cmd line arguments */
-	int argc;	/* number of arguments */
-	char *arg;	/* buffer store ws separated args */
-	pid_t child; /* child process id */
-	int WSIG;  /* wait signal */
-	char recent[MAX_LINE][10];	/* 10 recent commmands */
+	return 0;
+}
 
-	while (should_run) {
-		printf("osh> ");
-		fflush(stdout);
+/*  Read line from stdin */
+char *osh_read(void)
+{
+	char *cmd;	/* command read */
 
-		argc = 0;
-		WSIG = 1;
-		fgets(cmd,MAX_LINE,stdin);	/* read cmd */
-		if(strcmp(cmd,"exit\n") == 0) {
-			should_run = 0;
-			continue;
-		}
-		else if(strcmp(cmd,"\n") == 0) {
-			continue;
-		}
+	cmd = malloc(MAX_LINE * sizeof(char));
+	fgets(cmd,MAX_LINE,stdin);
+	return cmd;
+}
 
-		/* parse cmd and arguments */
-		args[argc] = strtok(cmd,ws);
-		while(args[argc] != NULL) {
-			argc += 1;
-			args[argc] = strtok(NULL,ws);
-		}
+/*  Split commands into arguments */
+char **osh_split(char *cmd)
+{
+	char **args;
+	args = malloc(MAX_ARGS * sizeof(char*));
+	int argc = 0;
 
-		if(strcmp(args[argc-1],"&") == 0) {
-			WSIG = 0;
-			args[argc-1] = NULL;
-		}
-		else {
-			args[argc] = NULL;
-		}
+	args[argc] = strtok(cmd,ws);
 
-		child = fork();
-		if (child < 0) {
-			/* if fork fails exit gracefully */
-			perror("fork() failed\n");
-			return 0;
-		}
-		else if(child == 0) {
-			/* child process */
-			if(execvp(args[0], args) == -1) {
-				printf("-osh: %s: command not found\n",args[0]);
-			}
+	while (args[argc] != NULL) {
+		argc += 1;
+		args[argc] = strtok(NULL,ws);
+	}
+
+	return args;
+}
+
+/* Execute system commands */
+int osh_sys(char **args)
+{
+	pid_t pid;
+
+	pid = fork();
+
+	/* execute command in child process */
+	if(pid == 0) {
+		if(execvp(args[0],args) == -1) {
+			perror("osh");
 			exit(0);
 		}
-		else {
-			if(WSIG) {
-				wait(NULL);
-			}
+	}
+	else if(pid < 0) {
+		/* fork failed */
+		perror("osh");
+	}
+	else {
+		wait(NULL);
+	}
+	return 1;
+}
+
+/* Execute builtin shell commands */
+int osh_exec(char **args)
+{
+	if(args[0] == NULL) {
+		// no command
+		return 1;
+	}
+
+	for(int i=0;i<builtin_num;i++) {
+		if(strcmp(args[0],builtin_cmd[i]) == 0) {
+			return (*builtin_func[i])(args);
 		}
 	}
 
+	return osh_sys(args);
+}
+
+/* Initiate shell */
+int osh_init()
+{
+	char *cmd;
+	char **args;
+	int status;
+
+	do {
+		printf("osh> ");
+
+		cmd = osh_read();
+		args = osh_split(cmd);
+		status = osh_exec(args);
+
+		free(cmd);
+		free(args);
+	} while(status);
+	return 1;
+}
+
+int main(void)
+{
+	/* initiate shell */
+	osh_init();
 	return 0;
 }
