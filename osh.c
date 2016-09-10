@@ -7,18 +7,25 @@
 #define MAX_LINE 1024	/* The maximum length of cmd */
 #define MAX_ARGS 80		/* length of each argument */
 #define ws " \t\n\v"
+#define HOME "HOME"
+#define USER "USER"
 
 /* Built-in function declarations for shell commands */
 int osh_exit(char **args);
+int osh_cd(char **args);
+int osh_history(char **args);
 
 /* List of built-in commands */
 char *builtin_cmd[] = {
-	"exit"
+	"exit",
+	"cd"
 };
 
 /* List of built-in functions */
 int (*builtin_func[]) (char **) = {
-	&osh_exit
+	&osh_exit,
+	&osh_cd,
+	&osh_history
 };
 
 /*  Number of built-in commands */
@@ -28,6 +35,22 @@ int builtin_num = sizeof(builtin_cmd)/sizeof(char*);
 int osh_exit(char **args)
 {
 	return 0;
+}
+
+int osh_cd(char **args)
+{
+	if(args[1] == NULL) {
+		chdir(getenv(HOME));
+	}
+	else if(chdir(args[1]) == -1) {
+		perror("osh");
+	}
+	return 1;
+}
+
+int osh_history(char **args)
+{
+	return 1;
 }
 
 /*  Read line from stdin */
@@ -104,9 +127,12 @@ int osh_init()
 	char *cmd;
 	char **args;
 	int status;
+	char *user;
+
+	user = getenv(USER);
 
 	do {
-		printf("osh> ");
+		printf("%s:osh$ ",user);
 
 		cmd = osh_read();
 		args = osh_split(cmd);
