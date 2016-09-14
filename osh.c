@@ -3,12 +3,22 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <fcntl.h>
 
 #define MAX_LINE 1024	/* The maximum length of cmd */
 #define MAX_ARGS 80		/* length of each argument */
+#define MAX_FNAME 512	/* size of file name */
 #define ws " \t\n\v"
 #define HOME "HOME"
 #define USER "USER"
+#define HISTORY "/.osh_history"
+
+/* helper functions for shell */
+char *escapechars(char *str)
+{
+	return str;
+}
 
 /* Built-in function declarations for shell commands */
 int osh_exit(char **args);
@@ -18,7 +28,8 @@ int osh_history(char **args);
 /* List of built-in commands */
 char *builtin_cmd[] = {
 	"exit",
-	"cd"
+	"cd",
+	"history"
 };
 
 /* List of built-in functions */
@@ -50,6 +61,24 @@ int osh_cd(char **args)
 
 int osh_history(char **args)
 {
+	char *cmd;
+	cmd = malloc(MAX_LINE * sizeof(char));
+
+	char *fpath;
+	fpath = malloc(MAX_FNAME * sizeof(char));
+	strcpy(fpath,getenv(HOME));
+	strcat(fpath,HISTORY);
+
+	FILE *fp;
+	fp = fopen(fpath,"r");
+	int i = 0;
+	if(fp != NULL) {
+			while(fgets(cmd,MAX_LINE,fp) != NULL && ++i) {
+				fprintf(stdout,"%d %s",i,cmd);
+		}
+	}
+	fclose(fp);
+
 	return 1;
 }
 
@@ -61,6 +90,28 @@ char *osh_read(void)
 	cmd = malloc(MAX_LINE * sizeof(char));
 	fgets(cmd,MAX_LINE,stdin);
 	return cmd;
+}
+
+/* Save history */
+int osh_save(char *cmd)
+{
+	char *fpath;
+
+	fpath = malloc(MAX_FNAME * sizeof(char));
+	strcpy(fpath,getenv(HOME));
+	strcat(fpath,HISTORY);
+
+	FILE *fp;
+	fp = fopen(fpath,"a+");
+	if(fp == NULL) {
+		perror("osh:");
+	}
+	else {
+		fprintf(fp,"%s",cmd);
+		fclose(fp);
+	}
+
+	return 0;
 }
 
 /*  Split commands into arguments */
@@ -128,19 +179,20 @@ int osh_init()
 	char **args;
 	int status;
 	char *user;
-
 	user = getenv(USER);
 
 	do {
 		printf("%s:osh$ ",user);
 
 		cmd = osh_read();
+		osh_save(cmd);
 		args = osh_split(cmd);
 		status = osh_exec(args);
 
 		free(cmd);
 		free(args);
 	} while(status);
+
 	return 1;
 }
 
