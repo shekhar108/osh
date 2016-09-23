@@ -2,31 +2,19 @@
 
 %{
 #include <stdio.h>
-#include <string.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <fcntl.h>
-
-#define MAX_LINE 1024	/* The maximum length of cmd */
-#define MAX_ARGS 80		/* length of each argument */
-#define MAX_FNAME 512	/* size of file name */
-#define MAX_UNAME 100	/* size of user name */
-#define ws " \t\n\v"
-#define HOME "HOME"
-#define USER "USER"
-#define HISTORY "/.osh_history"
-
 void yyerror(char *);
-int osh_exec(char *);
 int yylex();
-
 %}
+
+%union {
+	int intval;
+	char *strval;
+	float floatval;
+}
 
 /* declare tokens */
 %token BLANK 258
-%token ID 259
+%token <strval> ID 259
 %token META 260
 %token OP 261
 %token DO 262
@@ -43,15 +31,20 @@ int yylex();
 %token RBRACE 273
 
 %%
-command			:	ID argument_list META { printf("Sup !!\n"); }
-argument_list	:	{ /*empty argument list */ }
-				   | argument_list BLANK argument;
-argument			:	ID;
+command			: simple_command '\n'
+					| '\n' {printf("no command\n");}
+					;
+simple_command	: ID '\n'
+					| simple_command ID '\n'
+					;
 %%
 
 int main(int argc, char *argv[])
 {
-	yyparse();
+	if(yyparse()) {
+		printf("error\n");
+		return 0;
+	}
 	return 0;
 }
 
