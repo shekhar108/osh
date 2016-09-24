@@ -5,10 +5,13 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <readline/readline.h>
 
 #define MAX_LINE 1024	/* The maximum length of cmd */
 #define MAX_ARGS 80		/* length of each argument */
 #define MAX_FNAME 512	/* size of file name */
+#define MAX_UNAME 100	/* size of user name */
+#define MAX_PATH 512		/* path to home directory */
 #define ws " \t\n\v"
 #define HOME "HOME"
 #define USER "USER"
@@ -51,10 +54,16 @@ int osh_exit(char **args)
 int osh_cd(char **args)
 {
 	if(args[1] == NULL) {
-		chdir(getenv(HOME));
+		char *path;
+		path = malloc(MAX_PATH * sizeof(char));
+
+		strcpy(path,getenv(HOME));
+		strcat(path,getenv(USER));
+		chdir(path);
 	}
 	else if(chdir(args[1]) == -1) {
 		perror("osh");
+      return 0;
 	}
 	return 1;
 }
@@ -73,11 +82,13 @@ int osh_history(char **args)
 	fp = fopen(fpath,"r");
 	int i = 0;
 	if(fp != NULL) {
-			while(fgets(cmd,MAX_LINE,fp) != NULL && ++i) {
-				fprintf(stdout,"%d %s",i,cmd);
+		while(fgets(cmd,MAX_LINE,fp) != NULL && ++i) {
+			fprintf(stdout,"%d %s",i,cmd);
 		}
 	}
 	fclose(fp);
+	free(cmd);
+	free(fpath);
 
 	return 1;
 }
@@ -86,23 +97,29 @@ int osh_history(char **args)
 char *osh_read(void)
 {
 	char *cmd;	/* command read */
-
 	cmd = malloc(MAX_LINE * sizeof(char));
-	fgets(cmd,MAX_LINE,stdin);
-	return cmd;
+
+   char *prompt;
+	prompt = malloc(MAX_UNAME * sizeof(char));
+	strcpy(prompt,getenv(USER));
+   strcat(prompt,":osh$ ");
+
+//	fgets(cmd,MAX_LINE,stdin);
+	cmd = readline(prompt);
+   return cmd;
 }
 
 /* Save history */
 int osh_save(char *cmd)
 {
-	char *fpath;
+  char fpath[MAX_FNAME];
 
-	fpath = malloc(MAX_FNAME * sizeof(char));
-	strcpy(fpath,getenv(HOME));
-	strcat(fpath,HISTORY);
+  strcpy(fpath,getenv(HOME));
+  strcat(fpath,HISTORY);
 
-	FILE *fp;
-	fp = fopen(fpath,"a+");
+  FILE *fp;
+  fp = fopen(fpath,"a+");
+
 	if(fp == NULL) {
 		perror("osh:");
 	}
@@ -135,14 +152,14 @@ char **osh_split(char *cmd)
 int osh_sys(char **args)
 {
 	pid_t pid;
-
 	pid = fork();
 
 	/* execute command in child process */
 	if(pid == 0) {
 		if(execvp(args[0],args) == -1) {
-			perror("osh");
-			exit(0);
+         /* if exec fails, try cd */
+         perror("osh");
+         exit(0);
 		}
 	}
 	else if(pid < 0) {
@@ -150,7 +167,7 @@ int osh_sys(char **args)
 		perror("osh");
 	}
 	else {
-		wait(NULL);
+      wait(NULL);
 	}
 	return 1;
 }
@@ -178,12 +195,8 @@ int osh_init()
 	char *cmd;
 	char **args;
 	int status;
-	char *user;
-	user = getenv(USER);
 
 	do {
-		printf("%s:osh$ ",user);
-
 		cmd = osh_read();
 		osh_save(cmd);
 		args = osh_split(cmd);
