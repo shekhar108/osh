@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <readline/readline.h>
+#include <readline/history.h>
 
 #define MAX_LINE 1024	/* The maximum length of cmd */
 #define MAX_ARGS 80		/* length of each argument */
@@ -57,9 +58,15 @@ int osh_cd(char **args)
 		char *path;
 		path = malloc(MAX_PATH * sizeof(char));
 
-		strcpy(path,getenv(HOME));
-		strcat(path,getenv(USER));
-		chdir(path);
+      if(strcmp(args[0],"cd") == 0) {
+	   	strcpy(path,getenv(HOME));
+	   	chdir(path);
+      }
+      else {
+         if(chdir(args[0]) == -1) {
+            return 0;
+         }
+      }
 	}
 	else if(chdir(args[1]) == -1) {
 		perror("osh");
@@ -185,6 +192,10 @@ int osh_exec(char **args)
 			return (*builtin_func[i])(args);
 		}
 	}
+
+   if(osh_cd(args) == 1) {
+      return 1;
+   }
 
 	return osh_sys(args);
 }
