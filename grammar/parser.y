@@ -2,6 +2,7 @@
 
 %{
 #include <stdio.h>
+#include <string.h>
 void yyerror(char *);
 int yylex();
 %}
@@ -10,41 +11,31 @@ int yylex();
 	int intval;
 	char *strval;
 	float floatval;
+   char **list;
 }
 
 /* declare tokens */
 %token BLANK 258
 %token <strval> ID 259
-%token META 260
-%token OP 261
-%token DO 262
-%token DONE 263
-%token IF 264
-%token THEN 265
-%token ELIF 266
-%token ELSE 267
-%token FI 268
-%token FOR 269
-%token FUNC 270
-%token WHILE 271
-%token LBRACE 272
-%token RBRACE 273
+%token <intval> INT 260
+%token EOL 261
+%token ADD 262
+%token SUB 263
+
+%type<strval> expr prog
 
 %%
-command			: simple_command '\n'
-					| '\n' {printf("no command\n");}
-					;
-simple_command	: ID '\n'
-					| simple_command ID '\n'
-					;
+prog  : prog expr EOL { $$ = $2; printf("prog1: %s\n",$2);}
+      | expr EOL  { $$ = $1; printf("prog2: %s\n",$1);}
+      ;
+expr  : ID            { $$ = $1; }
+      | expr ID       { $$ = $1; strcat($$,$2); }
+      ;
 %%
 
 int main(int argc, char *argv[])
 {
-	if(yyparse()) {
-		printf("error\n");
-		return 0;
-	}
+	yyparse();
 	return 0;
 }
 

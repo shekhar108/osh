@@ -360,8 +360,8 @@ static void yy_fatal_error (yyconst char msg[]  );
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
 
-#define YY_NUM_RULES 5
-#define YY_END_OF_BUFFER 6
+#define YY_NUM_RULES 6
+#define YY_END_OF_BUFFER 7
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -369,9 +369,10 @@ struct yy_trans_info
 	flex_int32_t yy_verify;
 	flex_int32_t yy_nxt;
 	};
-static yyconst flex_int16_t yy_accept[11] =
+static yyconst flex_int16_t yy_accept[12] =
     {   0,
-        0,    0,    6,    4,    3,    3,    2,    1,    1,    0
+        0,    0,    7,    5,    4,    3,    2,    1,    2,    1,
+        0
     } ;
 
 static yyconst flex_int32_t yy_ec[256] =
@@ -379,17 +380,17 @@ static yyconst flex_int32_t yy_ec[256] =
         1,    1,    1,    1,    1,    1,    1,    1,    2,    3,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    2,    1,    1,    1,    1,    1,    4,    1,    1,
-        1,    1,    1,    1,    1,    1,    1,    5,    5,    5,
-        5,    5,    5,    5,    5,    5,    5,    1,    4,    1,
-        1,    1,    1,    1,    6,    6,    6,    6,    6,    6,
-        6,    6,    6,    6,    6,    6,    6,    6,    6,    6,
-        6,    6,    6,    6,    6,    6,    6,    6,    6,    6,
-        1,    1,    1,    1,    6,    1,    6,    6,    6,    6,
+        1,    2,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    4,    4,    4,
+        4,    4,    4,    4,    4,    4,    4,    1,    1,    1,
+        1,    1,    1,    1,    5,    5,    5,    5,    5,    5,
+        5,    5,    5,    5,    5,    5,    5,    5,    5,    5,
+        5,    5,    5,    5,    5,    5,    5,    5,    5,    5,
+        1,    1,    1,    1,    5,    1,    5,    5,    5,    5,
 
-        6,    6,    6,    6,    6,    6,    6,    6,    6,    6,
-        6,    6,    6,    6,    6,    6,    6,    6,    6,    6,
-        6,    6,    1,    4,    1,    1,    1,    1,    1,    1,
+        5,    5,    5,    5,    5,    5,    5,    5,    5,    5,
+        5,    5,    5,    5,    5,    5,    5,    5,    5,    5,
+        5,    5,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
@@ -406,33 +407,33 @@ static yyconst flex_int32_t yy_ec[256] =
         1,    1,    1,    1,    1
     } ;
 
-static yyconst flex_int32_t yy_meta[7] =
+static yyconst flex_int32_t yy_meta[6] =
     {   0,
-        1,    1,    1,    1,    2,    2
+        1,    1,    1,    2,    3
     } ;
 
-static yyconst flex_int16_t yy_base[12] =
+static yyconst flex_int16_t yy_base[14] =
     {   0,
-        0,    0,    8,    9,    9,    9,    9,    0,    0,    9,
-        5
+        0,    0,    9,   10,   10,   10,    0,    0,    0,    0,
+       10,    6,    4
     } ;
 
-static yyconst flex_int16_t yy_def[12] =
+static yyconst flex_int16_t yy_def[14] =
     {   0,
-       10,    1,   10,   10,   10,   10,   10,   11,   11,    0,
-       10
+       11,    1,   11,   11,   11,   11,   12,   13,   12,   13,
+        0,   11,   11
     } ;
 
 static yyconst flex_int16_t yy_nxt[16] =
     {   0,
-        4,    5,    6,    7,    4,    8,    9,   10,    3,   10,
-       10,   10,   10,   10,   10
+        4,    5,    6,    7,    8,   10,   10,    9,   11,    3,
+       11,   11,   11,   11,   11
     } ;
 
 static yyconst flex_int16_t yy_chk[16] =
     {   0,
-        1,    1,    1,    1,    1,    1,   11,    3,   10,   10,
-       10,   10,   10,   10,   10
+        1,    1,    1,    1,    1,   13,   13,   12,    3,   11,
+       11,   11,   11,   11,   11
     } ;
 
 static yy_state_type yy_last_accepting_state;
@@ -455,7 +456,9 @@ char *yytext;
 #line 5 "oshGrammar.l"
 #include "parser.tab.h"
 #include <string.h>
-#line 459 "lex.yy.c"
+#include <stdio.h>
+#include <stdlib.h>
+#line 462 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -639,7 +642,7 @@ YY_DECL
     
 #line 11 "oshGrammar.l"
 
-#line 643 "lex.yy.c"
+#line 646 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -692,13 +695,13 @@ yy_match:
 			while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 				{
 				yy_current_state = (int) yy_def[yy_current_state];
-				if ( yy_current_state >= 11 )
+				if ( yy_current_state >= 12 )
 					yy_c = yy_meta[(unsigned int) yy_c];
 				}
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
 			++yy_cp;
 			}
-		while ( yy_base[yy_current_state] != 9 );
+		while ( yy_base[yy_current_state] != 10 );
 
 yy_find_action:
 		yy_act = yy_accept[yy_current_state];
@@ -730,25 +733,30 @@ YY_RULE_SETUP
 case 2:
 YY_RULE_SETUP
 #line 13 "oshGrammar.l"
-{ return META; }
+{ yylval.intval = atoi(yytext); return INT; }
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
 #line 14 "oshGrammar.l"
-{ }
+{ return EOL; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
 #line 15 "oshGrammar.l"
-{ printf("TFM character %c\n",*yytext); }
+{}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
 #line 16 "oshGrammar.l"
+{ printf("TFM character %c\n",*yytext); }
+	YY_BREAK
+case 6:
+YY_RULE_SETUP
+#line 17 "oshGrammar.l"
 ECHO;
 	YY_BREAK
-#line 752 "lex.yy.c"
+#line 760 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1040,7 +1048,7 @@ static int yy_get_next_buffer (void)
 		while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 			{
 			yy_current_state = (int) yy_def[yy_current_state];
-			if ( yy_current_state >= 11 )
+			if ( yy_current_state >= 12 )
 				yy_c = yy_meta[(unsigned int) yy_c];
 			}
 		yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
@@ -1068,11 +1076,11 @@ static int yy_get_next_buffer (void)
 	while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 		{
 		yy_current_state = (int) yy_def[yy_current_state];
-		if ( yy_current_state >= 11 )
+		if ( yy_current_state >= 12 )
 			yy_c = yy_meta[(unsigned int) yy_c];
 		}
 	yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
-	yy_is_jam = (yy_current_state == 10);
+	yy_is_jam = (yy_current_state == 11);
 
 	return yy_is_jam ? 0 : yy_current_state;
 }
@@ -1745,8 +1753,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 16 "oshGrammar.l"
-
+#line 17 "oshGrammar.l"
 
 
 /*

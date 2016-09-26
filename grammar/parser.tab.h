@@ -41,53 +41,34 @@
    enum yytokentype {
      BLANK = 258,
      ID = 259,
-     META = 260,
-     OP = 261,
-     DO = 262,
-     DONE = 263,
-     IF = 264,
-     THEN = 265,
-     ELIF = 266,
-     ELSE = 267,
-     FI = 268,
-     FOR = 269,
-     FUNC = 270,
-     WHILE = 271,
-     LBRACE = 272,
-     RBRACE = 273
+     INT = 260,
+     EOL = 261,
+     ADD = 262,
+     SUB = 263
    };
 #endif
 /* Tokens.  */
 #define BLANK 258
 #define ID 259
-#define META 260
-#define OP 261
-#define DO 262
-#define DONE 263
-#define IF 264
-#define THEN 265
-#define ELIF 266
-#define ELSE 267
-#define FI 268
-#define FOR 269
-#define FUNC 270
-#define WHILE 271
-#define LBRACE 272
-#define RBRACE 273
+#define INT 260
+#define EOL 261
+#define ADD 262
+#define SUB 263
 
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 9 "parser.y"
+#line 10 "parser.y"
 {
 	int intval;
 	char *strval;
 	float floatval;
+   char **list;
 }
 /* Line 1529 of yacc.c.  */
-#line 91 "parser.tab.h"
+#line 72 "parser.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
