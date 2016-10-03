@@ -1,3 +1,5 @@
+/* check history */
+
 #include <stdio.h>
 #include <string.h>
 #include <sys/wait.h>
@@ -18,11 +20,15 @@
 #define USER "USER"
 #define HISTORY "/.osh_history"
 
-/* helper functions for shell */
-char *escapechars(char *str)
+/* command types */
+struct cmd_type
 {
-	return str;
-}
+   char **args; /* command */
+   int type;    /* type of command (simple, redirect, pipe etc. ) */
+   char **xargs;/* extra arguments */
+};
+
+typedef struct cmd_type cmd_type;
 
 /* Built-in function declarations for shell commands */
 int osh_exit(char **args);
@@ -33,7 +39,8 @@ int osh_history(char **args);
 char *builtin_cmd[] = {
 	"exit",
 	"cd",
-	"history"
+	"history",
+   "redirect"
 };
 
 /* List of built-in functions */
@@ -131,7 +138,9 @@ int osh_save(char *cmd)
 		perror("osh:");
 	}
 	else {
-		fprintf(fp,"%s",cmd);
+      if(strcmp(cmd,"") != 0) {
+		   fprintf(fp,"%s\n",cmd);
+      }
 		fclose(fp);
 	}
 
@@ -139,20 +148,38 @@ int osh_save(char *cmd)
 }
 
 /*  Split commands into arguments */
-char **osh_split(char *cmd)
+cmd_type *osh_split(char *cmd)
 {
-	char **args;
-	args = malloc(MAX_ARGS * sizeof(char*));
-	int argc = 0;
+   cmd_type *cargs;
 
-	args[argc] = strtok(cmd,ws);
+   cargs = malloc(sizeof(cmd_type));
+	cargs->type = 0;
+   cargs->args = malloc(MAX_ARGS * sizeof(char*));
+   cargs->xargs = malloc(MAX_ARGS * sizeof(char*));
+   int argc = 0;
+   int xargc = 0;
+   char *arg;
 
-	while (args[argc] != NULL) {
+	arg = strtok(cmd,ws);
+
+	while (cargs->type == 0 && arg != NULL) {
+
+      if(strcmp(arg,">") == 0) {
+         cargs->type = 1;
+         break;
+      }
+      cargs->args[argc] = arg;
 		argc += 1;
-		args[argc] = strtok(NULL,ws);
+		arg = strtok(NULL,ws);
 	}
 
-	return args;
+   while(arg != NULL) {
+      xargc += 1;
+      arg = strtok(NULL,ws);
+      cargs->xargs[xargc] = arg;
+   }
+
+	return cargs;
 }
 
 /* Execute system commands */
@@ -187,12 +214,14 @@ int osh_exec(char **args)
 		return 1;
 	}
 
+   /* check builtin commands */
 	for(int i=0;i<builtin_num;i++) {
 		if(strcmp(args[0],builtin_cmd[i]) == 0) {
 			return (*builtin_func[i])(args);
 		}
 	}
 
+   /* try changing directory */
    if(osh_cd(args) == 1) {
       return 1;
    }
@@ -200,21 +229,32 @@ int osh_exec(char **args)
 	return osh_sys(args);
 }
 
+/* support for complex commands eg. redirect */
+int osh_exec2(cmd_type *cargs)
+{
+   if(cargs->type == 0) {
+      return osh_exec(cargs->args);
+   }
+   if(cargs->type == 1) {
+   }
+   return 0;
+}
+
 /* Initiate shell */
 int osh_init()
 {
 	char *cmd;
-	char **args;
+	cmd_type *cargs;
 	int status;
 
 	do {
 		cmd = osh_read();
 		osh_save(cmd);
-		args = osh_split(cmd);
-		status = osh_exec(args);
+		cargs = osh_split(cmd);
+		status = osh_exec2(cargs);
 
 		free(cmd);
-		free(args);
+		free(cargs);
 	} while(status);
 
 	return 1;
