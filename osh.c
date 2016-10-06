@@ -75,7 +75,7 @@ int osh_cd(char **args)
       }
 	}
 	else if(chdir(args[1]) == -1) {
-		perror("osh");
+		perror("osh_cd");
       return 0;
 	}
 	return 1;
@@ -167,6 +167,10 @@ cmd_type *osh_split(char *cmd)
          cargs->type = 1;
          break;
       }
+      if(strcmp(arg,"<") == 0) {
+         cargs->type = 2;
+         break;
+      }
       cargs->args[argc] = arg;
 		argc += 1;
 		arg = strtok(NULL,ws);
@@ -194,20 +198,29 @@ int osh_sys(cmd_type *cargs)
       {
          FILE *fp = fopen(cargs->xargs[0],"w+");
          if(fp == NULL) {
-            perror("osh");
+            perror("osh_sys");
          }
          close(STDOUT_FILENO);
          dup(fileno(fp));
       }
+      if(cargs->type == 2)
+      {
+         FILE *fp = fopen(cargs->xargs[0],"r+");
+         if(fp == NULL) {
+            perror("osh_sys");
+         }
+         close(STDIN_FILENO);
+         dup(fileno(fp));
+      }
 
       if(execvp(cargs->args[0],cargs->args) == -1) {
-         perror("osh");
+         perror("osh_sys");
          exit(0);
 		}
 	}
 	else if(pid < 0) {
 		/* fork failed */
-		perror("osh");
+		perror("osh_sys");
 	}
 	else {
       wait(NULL);
