@@ -40,7 +40,6 @@ char *builtin_cmd[] = {
 	"exit",
 	"cd",
 	"history",
-   "redirect"
 };
 
 /* List of built-in functions */
@@ -174,24 +173,34 @@ cmd_type *osh_split(char *cmd)
 	}
 
    while(arg != NULL) {
-      xargc += 1;
       arg = strtok(NULL,ws);
       cargs->xargs[xargc] = arg;
+      xargc += 1;
    }
 
-	return cargs;
+   return cargs;
 }
 
 /* Execute system commands */
-int osh_sys(char **args)
+int osh_sys(cmd_type *cargs)
 {
 	pid_t pid;
 	pid = fork();
 
 	/* execute command in child process */
-	if(pid == 0) {
-		if(execvp(args[0],args) == -1) {
-         /* if exec fails, try cd */
+	if(pid == 0)
+   {
+      if(cargs->type == 1)
+      {
+         FILE *fp = fopen(cargs->xargs[0],"w+");
+         if(fp == NULL) {
+            perror("osh");
+         }
+         close(STDOUT_FILENO);
+         dup(fileno(fp));
+      }
+
+      if(execvp(cargs->args[0],cargs->args) == -1) {
          perror("osh");
          exit(0);
 		}
@@ -207,38 +216,41 @@ int osh_sys(char **args)
 }
 
 /* Execute builtin shell commands */
-int osh_exec(char **args)
+int osh_exec(cmd_type *cargs)
 {
-	if(args[0] == NULL) {
+	if(cargs->args[0] == NULL) {
 		// no command
 		return 1;
 	}
 
    /* check builtin commands */
 	for(int i=0;i<builtin_num;i++) {
-		if(strcmp(args[0],builtin_cmd[i]) == 0) {
-			return (*builtin_func[i])(args);
+		if(strcmp(cargs->args[0],builtin_cmd[i]) == 0) {
+			return (*builtin_func[i])(cargs->args);
 		}
 	}
 
    /* try changing directory */
-   if(osh_cd(args) == 1) {
+   if(osh_cd(cargs->args) == 1) {
       return 1;
    }
 
-	return osh_sys(args);
+	return osh_sys(cargs);
 }
 
-/* support for complex commands eg. redirect */
-int osh_exec2(cmd_type *cargs)
-{
-   if(cargs->type == 0) {
-      return osh_exec(cargs->args);
-   }
-   if(cargs->type == 1) {
-   }
-   return 0;
-}
+///* support for complex commands eg. redirect */
+//int osh_exec2(cmd_type *cargs)
+//{
+//   /* simple command */
+//   if(cargs->type == 0) {
+//      return osh_exec(cargs->args);
+//   }
+//   /* redirect command */
+//   if(cargs->type == 1) {
+//      osh_redirect(cargs->args,cargs->xargs);
+//   }
+//   return 0;
+//}
 
 /* Initiate shell */
 int osh_init()
@@ -251,7 +263,7 @@ int osh_init()
 		cmd = osh_read();
 		osh_save(cmd);
 		cargs = osh_split(cmd);
-		status = osh_exec2(cargs);
+		status = osh_exec(cargs);
 
 		free(cmd);
 		free(cargs);
